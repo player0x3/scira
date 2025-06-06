@@ -17,7 +17,7 @@ import { isToday, isYesterday, isThisWeek, isThisMonth, subWeeks, differenceInSe
 import { deleteChat, getUserChats, loadMoreChats, updateChatTitle } from "@/app/actions";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { User } from "@/lib/db/schema";
+import type { User } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useMutation,

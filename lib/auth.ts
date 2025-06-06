@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "@/lib/db";
 import { config } from 'dotenv';
 import { serverEnv } from "@/env/server";
@@ -10,7 +10,7 @@ config({
 });
 
 export const auth = betterAuth({
-    database: drizzleAdapter(db, {
+    database: prismaAdapter(db, {
         provider: "pg",
     }),
     socialProviders: {

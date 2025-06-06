@@ -31,7 +31,7 @@ import {
 } from 'resumable-stream';
 import { after } from 'next/server';
 import { differenceInSeconds } from 'date-fns';
-import { Chat } from '@/lib/db/schema';
+import type { Chat } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { geolocation } from "@vercel/functions";

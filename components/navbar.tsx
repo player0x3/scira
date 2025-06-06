@@ -13,7 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
-import { User } from '@/lib/db/schema';
+import type { User } from '@prisma/client';
 import { LinkedinLogo, RedditLogo, Share, XLogo } from '@phosphor-icons/react';
 import { ClassicLoader } from '@/components/ui/loading';
 

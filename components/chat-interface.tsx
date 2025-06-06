@@ -22,7 +22,7 @@ import { cn, SearchGroupId, invalidateChatsCache } from '@/lib/utils';
 import { getCurrentUser, suggestQuestions, updateChatVisibility } from '@/app/actions';
 import Messages from '@/components/messages';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from '@/lib/db/schema';
+import type { User } from '@prisma/client';
 import { ChatHistoryDialog } from '@/components/chat-history-dialog';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { useRouter } from 'next/navigation';

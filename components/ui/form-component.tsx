@@ -26,7 +26,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { User } from '@/lib/db/schema';
+import type { User } from '@prisma/client';
 import { useSession } from '@/lib/auth-client';
 import { checkImageModeration } from '@/app/actions';
 
