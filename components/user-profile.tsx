@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { XLogo, InstagramLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { User } from '@/lib/db/schema';
+import type { User } from '@prisma/client';
 
 const VercelIcon = ({ size = 16 }: { size: number }) => {
   return (
