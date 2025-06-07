@@ -28,15 +28,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (chat.visibility === 'public') {
     title = chat.title;
   }
-  // if chat is private, return title
+  // if chat is private, only the owner can see the title
   if (chat.visibility === 'private') {
-    if (!user) {
+    if (!user || user.id !== chat.userId) {
       title = 'Scira Chat';
+    } else {
+      title = chat.title;
     }
-    if (user!.id !== chat.userId) {
-      title = 'Scira Chat';
-    }
-    title = chat.title;
   }
   return {
     title: title, description: "A search in scira.ai",
