@@ -99,7 +99,7 @@ export async function generateTitleFromUserMessage({
   message: UIMessage;
 }) {
   const { text: title } = await generateText({
-    model: scira.languageModel('scira-4o'),
+    model: scira.languageModel('scira-gemini2'),
     system: `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
@@ -197,9 +197,9 @@ const groupTools = {
   chat: [] as const,
   extreme: ['extreme_search'] as const,
   x: ['x_search'] as const,
-  memory: ['memory_manager', 'datetime'] as const,
+  memory: ['datetime'] as const,
   // Add legacy mapping for backward compatibility
-  buddy: ['memory_manager', 'datetime'] as const,
+  buddy: [ 'datetime'] as const,
 } as const;
 
 const groupInstructions = {

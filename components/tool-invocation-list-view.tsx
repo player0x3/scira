@@ -1576,18 +1576,18 @@ const ToolInvocationListView = memo(
                     );
                 }
 
-                if (toolInvocation.toolName === 'memory_manager') {
-                    if (!result) {
-                        return (
-                            <SearchLoadingState
-                                icon={Memory}
-                                text="Managing memories..."
-                                color="violet"
-                            />
-                        );
-                    }
-                    return <MemoryManager result={result} />;
-                }
+                // if (toolInvocation.toolName === 'memory_manager') {
+                //     if (!result) {
+                //         return (
+                //             <SearchLoadingState
+                //                 icon={Memory}
+                //                 text="Managing memories..."
+                //                 color="violet"
+                //             />
+                //         );
+                //     }
+                //     return <MemoryManager result={result} />;
+                // }
 
                 if (toolInvocation.toolName === 'mcp_search') {
                     if (!result) {

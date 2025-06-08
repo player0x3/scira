@@ -2,12 +2,7 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
-import { config } from 'dotenv';
 import { serverEnv } from "@/env/server";
-
-config({
-    path: '.env.local',
-});
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -28,5 +23,5 @@ export const auth = betterAuth({
         },
     },
     plugins: [nextCookies()],
-    trustedOrigins: ["http://localhost:3000", "https://scira.ai", "https://www.scira.ai"],
+    trustedOrigins: ["http://localhost:3000"],
 });

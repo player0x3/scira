@@ -75,12 +75,12 @@ const GeminiIcon = ({ className }: { className?: string }) => (
         <title>Gemini</title>
         <defs>
             <linearGradient id="lobe-icons-gemini-fill" x1="0%" x2="68.73%" y1="100%" y2="30.395%">
-                <stop offset="0%" stop-color="#1C7DFF"></stop>
-                <stop offset="52.021%" stop-color="#1C69FF"></stop>
-                <stop offset="100%" stop-color="#F0DCD6"></stop>
+                <stop offset="0%" stopColor="#1C7DFF"></stop>
+                <stop offset="52.021%" stopColor="#1C69FF"></stop>
+                <stop offset="100%" stopColor="#F0DCD6"></stop>
             </linearGradient>
         </defs>
-        <path d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12" fill="url(#lobe-icons-gemini-fill)" fill-rule="nonzero"></path>
+        <path d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12" fill="url(#lobe-icons-gemini-fill)" fillRule="nonzero"></path>
     </svg>
 );
 

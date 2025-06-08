@@ -3,10 +3,6 @@ import { config } from 'dotenv';
 import { headers } from "next/headers";
 import { User } from "./db/schema";
 
-config({
-    path: '.env.local',
-});
-
 export const getSession = async () => {
     const session = await auth.api.getSession({
         headers: await headers()
