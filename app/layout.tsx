@@ -1,10 +1,10 @@
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Geist } from 'next/font/google';
+// import { Geist } from 'next/font/google';
 import 'katex/dist/katex.min.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Metadata, Viewport } from "next";
-import { Syne } from 'next/font/google';
+// import { Syne } from 'next/font/google';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -65,19 +65,19 @@ export const viewport: Viewport = {
   ],
 }
 
-const syne = Syne({ 
-  subsets: ['latin'], 
-  variable: '--font-syne',
-   preload: true,
-  display: 'swap',
-});
+// const syne = Syne({ 
+//   subsets: ['latin'], 
+//   variable: '--font-syne',
+//    preload: true,
+//   display: 'swap',
+// });
 
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  preload: true,
-  display: 'swap',
-});
+// const geist = Geist({
+//   subsets: ['latin'],
+//   variable: '--font-sans',
+//   preload: true,
+//   display: 'swap',
+// });
 
 export default function RootLayout({
   children,
@@ -86,7 +86,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${syne.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`font-sans antialiased`} suppressHydrationWarning>
         <NuqsAdapter>
           <Providers>
             <Toaster position="top-center" />

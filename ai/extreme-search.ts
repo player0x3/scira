@@ -230,52 +230,52 @@ ${JSON.stringify(plan.plan)}
         prompt,
         temperature: 0,
         tools: {
-            codeRunner: {
-                description: 'Run Python code in a sandbox',
-                parameters: z.object({
-                    title: z.string().describe('The title of what you are running the code for'),
-                    code: z.string().describe('The Python code to run with proper syntax and imports'),
-                }),
-                execute: async ({ title, code }) => {
-                    console.log("Running code:", code);
-                    // check if the code has any imports other than the pythonLibsAvailable
-                    // and then install the missing libraries
-                    const imports = code.match(/import\s+([\w\s,]+)/);
-                    const importLibs = imports ? imports[1].split(',').map((lib: string) => lib.trim()) : [];
-                    const missingLibs = importLibs.filter((lib: string) => !pythonLibsAvailable.includes(lib));
+            // codeRunner: {
+            //     description: 'Run Python code in a sandbox',
+            //     parameters: z.object({
+            //         title: z.string().describe('The title of what you are running the code for'),
+            //         code: z.string().describe('The Python code to run with proper syntax and imports'),
+            //     }),
+            //     execute: async ({ title, code }) => {
+            //         console.log("Running code:", code);
+            //         // check if the code has any imports other than the pythonLibsAvailable
+            //         // and then install the missing libraries
+            //         const imports = code.match(/import\s+([\w\s,]+)/);
+            //         const importLibs = imports ? imports[1].split(',').map((lib: string) => lib.trim()) : [];
+            //         const missingLibs = importLibs.filter((lib: string) => !pythonLibsAvailable.includes(lib));
 
-                    dataStream.writeMessageAnnotation({
-                        status: { type: "code", title: title, code: code },
-                    });
-                    const response = await runCode(code, missingLibs);
+            //         dataStream.writeMessageAnnotation({
+            //             status: { type: "code", title: title, code: code },
+            //         });
+            //         const response = await runCode(code, missingLibs);
 
-                    // Extract chart data if present, and if so then map and remove the png with chart.png
-                    const charts = response.artifacts?.charts?.map(chart => {
-                        if (chart.png) {
-                            const { png, ...chartWithoutPng } = chart;
-                            return chartWithoutPng;
-                        }
-                        return chart;
-                    }) || [];
+            //         // Extract chart data if present, and if so then map and remove the png with chart.png
+            //         const charts = response.artifacts?.charts?.map(chart => {
+            //             if (chart.png) {
+            //                 const { png, ...chartWithoutPng } = chart;
+            //                 return chartWithoutPng;
+            //             }
+            //             return chart;
+            //         }) || [];
 
-                    console.log("Charts:", response.artifacts?.charts);
+            //         console.log("Charts:", response.artifacts?.charts);
 
-                    dataStream.writeMessageAnnotation({
-                        status: {
-                            type: "result",
-                            title: title,
-                            code: code,
-                            result: response.result,
-                            charts: charts
-                        },
-                    });
+            //         dataStream.writeMessageAnnotation({
+            //             status: {
+            //                 type: "result",
+            //                 title: title,
+            //                 code: code,
+            //                 result: response.result,
+            //                 charts: charts
+            //             },
+            //         });
 
-                    return {
-                        result: response.result,
-                        charts: charts
-                    };
-                },
-            },
+            //         return {
+            //             result: response.result,
+            //             charts: charts
+            //         };
+            //     },
+            // },
             webSearch: {
                 description: 'Search the web for information on a topic',
                 parameters: z.object({

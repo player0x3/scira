@@ -5,12 +5,14 @@ import { db } from '@/lib/db'
 import { serverEnv } from '@/env/server'
 
 export const auth = betterAuth({
-  database: prismaAdapter(db),
+  database: prismaAdapter(db, {
+    provider: 'postgresql',
+  }),
   socialProviders: {
-    github: {
-      clientId: serverEnv.GITHUB_CLIENT_ID,
-      clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
-    },
+    // github: {
+    //   clientId: serverEnv.GITHUB_CLIENT_ID,
+    //   clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
+    // },
     google: {
       clientId: serverEnv.GOOGLE_CLIENT_ID,
       clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,

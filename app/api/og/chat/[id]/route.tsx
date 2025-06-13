@@ -24,11 +24,11 @@ export async function GET(
     const logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`;
     
     // Load custom fonts
-    const geistFontPath = path.join(process.cwd(), 'app/api/og/chat/[id]/fonts', 'Geist-Regular.ttf');
-    const syneFontPath = path.join(process.cwd(), 'app/api/og/chat/[id]/fonts', 'Syne-Bold.ttf');
+    // const geistFontPath = path.join(process.cwd(), 'app/api/og/chat/[id]/fonts', 'Geist-Regular.ttf');
+    // const syneFontPath = path.join(process.cwd(), 'app/api/og/chat/[id]/fonts', 'Syne-Bold.ttf');
     
-    const geistFontData = await fs.promises.readFile(geistFontPath);
-    const syneFontData = await fs.promises.readFile(syneFontPath);
+    // const geistFontData = await fs.promises.readFile(geistFontPath);
+    // const syneFontData = await fs.promises.readFile(syneFontPath);
 
     // If chat doesn't exist or isn't public, return a default OG image
     if (!chatWithUser || chatWithUser.visibility !== 'public') {
@@ -89,18 +89,18 @@ export async function GET(
         {
           width: 1200,
           height: 630,
-          fonts: [
-            {
-              name: 'Geist',
-              data: geistFontData,
-              style: 'normal',
-            },
-            {
-              name: 'Syne',
-              data: syneFontData,
-              style: 'normal',
-            },
-          ],
+          // fonts: [
+          //   {
+          //     name: 'Geist',
+          //     data: geistFontData,
+          //     style: 'normal',
+          //   },
+          //   {
+          //     name: 'Syne',
+          //     data: syneFontData,
+          //     style: 'normal',
+          //   },
+          // ],
         }
       );
     }
@@ -238,7 +238,7 @@ export async function GET(
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ opacity: 0.7 }}>By</span>
-                  <span style={{ fontWeight: 600 }}>{chatWithUser.userName}</span>
+                  <span style={{ fontWeight: 600 }}>{chatWithUser.user.name}</span>
                 </div>
                 <div style={{ 
                   width: '6px', 
@@ -277,18 +277,18 @@ export async function GET(
       {
         width: 1200,
         height: 630,
-        fonts: [
-          {
-            name: 'Geist',
-            data: geistFontData,
-            style: 'normal',
-          },
-          {
-            name: 'Syne',
-            data: syneFontData,
-            style: 'normal',
-          },
-        ],
+        // fonts: [
+        //   {
+        //     name: 'Geist',
+        //     data: geistFontData,
+        //     style: 'normal',
+        //   },
+        //   {
+        //     name: 'Syne',
+        //     data: syneFontData,
+        //     style: 'normal',
+        //   },
+        // ],
       }
     );
   } catch (error) {
