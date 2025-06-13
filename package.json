@@ -142,7 +142,10 @@
       "core-js",
       "esbuild",
       "sharp",
-      "sqlite3"
+      "sqlite3",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma"
     ]
   },
   "overrides": {

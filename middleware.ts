@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
     const session = await auth.api.getSession({
         headers: request.headers
     })
+    console.log("Session: ", session);
     
     const { pathname } = request.nextUrl;
     console.log("Pathname: ", pathname);

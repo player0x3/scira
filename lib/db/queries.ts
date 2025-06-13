@@ -104,10 +104,15 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function getChatWithUserById({ id }: { id: string }) {
   try {
-    return await db.chat.findUnique({
+    const result = await db.chat.findUnique({
       where: { id },
       include: { user: true },
     })
+    
+    if (!result) return null
+
+    // Keep the original nested structure for compatibility
+    return result
   } catch (error) {
     return null
   }
@@ -115,7 +120,17 @@ export async function getChatWithUserById({ id }: { id: string }) {
 
 export async function saveMessages({ messages }: { messages: Message[] }) {
   try {
-    return await db.message.createMany({ data: messages })
+    // Transform messages to match Prisma's expected input type
+    const messagesToSave = messages.map(message => ({
+      id: message.id,
+      chatId: message.chatId,
+      role: message.role,
+      parts: (message.parts ?? null) as Prisma.InputJsonValue,
+      attachments: (message.attachments ?? null) as Prisma.InputJsonValue,
+      createdAt: message.createdAt,
+    }))
+    
+    return await db.message.createMany({ data: messagesToSave })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save messages')
   }
@@ -144,8 +159,8 @@ export async function getMessagesByChatId({
 
 export async function getMessageById({ id }: { id: string }) {
   try {
-    const msg = await db.message.findUnique({ where: { id } })
-    return msg ? [msg] : []
+    const message = await db.message.findUnique({ where: { id } })
+    return message ? [message] : []
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get message by id')
   }
@@ -160,7 +175,10 @@ export async function deleteMessagesByChatIdAfterTimestamp({
 }) {
   try {
     await db.message.deleteMany({
-      where: { chatId, createdAt: { gte: timestamp } },
+      where: { 
+        chatId, 
+        createdAt: { gte: timestamp } 
+      },
     })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to delete messages by chat id after timestamp')
@@ -168,9 +186,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id })
-  if (message) {
-    await deleteMessagesByChatIdAfterTimestamp({ chatId: message.chatId, timestamp: message.createdAt })
+  const messages = await getMessageById({ id })
+  if (messages.length > 0) {
+    const message = messages[0]
+    await deleteMessagesByChatIdAfterTimestamp({ 
+      chatId: message.chatId, 
+      timestamp: message.createdAt 
+    })
   }
 }
 
@@ -182,7 +204,10 @@ export async function updateChatVisiblityById({
   visibility: 'private' | 'public'
 }) {
   try {
-    return await db.chat.update({ where: { id: chatId }, data: { visibility } })
+    return await db.chat.update({ 
+      where: { id: chatId }, 
+      data: { visibility } 
+    })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to update chat visibility by id')
   }
@@ -223,7 +248,12 @@ export async function getMessageCountByUserId({ id, differenceInHours }: { id: s
 
 export async function createStreamId({ streamId, chatId }: { streamId: string; chatId: string }) {
   try {
-    await db.stream.create({ data: { id: streamId, chatId } })
+    await db.stream.create({ 
+      data: { 
+        id: streamId, 
+        chatId
+      } 
+    })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create stream id')
   }
@@ -231,12 +261,12 @@ export async function createStreamId({ streamId, chatId }: { streamId: string; c
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   try {
-    const ids = await db.stream.findMany({
+    const streams = await db.stream.findMany({
       where: { chatId },
       orderBy: { createdAt: 'asc' },
       select: { id: true },
     })
-    return ids.map(i => i.id)
+    return streams.map(stream => stream.id)
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get stream ids by chat id')
   }
