@@ -1,0 +1,102 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider         = "zod-prisma-types"
+  output           = "../lib/zod"
+  createInputTypes = false
+  addIncludeType   = false
+  addSelectType    = false
+}
+
+model User {
+  id             String   @id @db.Text
+  name           String
+  email          String   @unique
+  emailVerified  Boolean
+  image          String?
+  createdAt      DateTime @db.Timestamp(6)
+  updatedAt      DateTime @db.Timestamp(6)
+
+  sessions   Session[]
+  accounts   Account[]
+  chats      Chat[]
+}
+
+model Session {
+  id         String   @id @db.Text
+  expiresAt  DateTime @db.Timestamp(6)
+  token      String   @unique
+  createdAt  DateTime @db.Timestamp(6)
+  updatedAt  DateTime @db.Timestamp(6)
+  ipAddress  String?
+  userAgent  String?
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String   @id @db.Text
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamp(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamp(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime @db.Timestamp(6)
+  updatedAt             DateTime @db.Timestamp(6)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id        String   @id @db.Text
+  identifier String
+  value     String
+  expiresAt DateTime @db.Timestamp(6)
+  createdAt DateTime? @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+}
+
+model Chat {
+  id         String   @id @default(uuid()) @db.Text
+  userId     String
+  title      String   @default("New Chat")
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @default(now()) @db.Timestamp(6)
+  visibility Visibility @default(private)
+  user       User     @relation(fields: [userId], references: [id])
+  messages   Message[]
+  streams    Stream[]
+}
+
+enum Visibility {
+  public
+  private
+}
+
+model Message {
+  id          String   @id @default(uuid()) @db.Text
+  chatId      String
+  role        String
+  parts       Json
+  attachments Json
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+model Stream {
+  id        String   @id @default(uuid()) @db.Text
+  chatId    String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}

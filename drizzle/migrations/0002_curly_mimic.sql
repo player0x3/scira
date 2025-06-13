@@ -1,1 +1,0 @@
-ALTER TABLE "message" ADD COLUMN "annotations" json;
