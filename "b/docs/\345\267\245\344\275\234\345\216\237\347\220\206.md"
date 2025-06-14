@@ -1,0 +1,57 @@
+# Scira 工作原理概述
+
+Scira 是一个基于 Next.js 和 Vercel AI SDK 的搜索与问答接口。该项目通过整合多家 LLM（如 xAI、OpenAI、Anthropic 等）以及多种外部 API，提供网页搜索、资讯获取及辅助分析等能力。
+
+本文件基于 `app/api/search/route.ts` 和 `ai/extreme-search.ts` 的代码，介绍普通搜索与 Extreme Search（深度搜索）两套流程的实现原理，方便开发者复现相同功能。
+
+## 技术栈
+
+- **Vercel AI SDK**：统一调用多家大模型并提供流式输出能力
+- **Next.js**：构建 API Route 与前端页面
+- **Tavily API**：执行普通网页搜索
+- **Exa API**：用于深度搜索中的网页内容爬取
+- **Daytona 沙箱**：运行 Python 代码或数据分析
+- 其他云服务：OpenWeather、Google Maps、Mapbox 等，用于特定工具
+
+## 普通搜索接口实现
+
+`app/api/search/route.ts` 定义了 `/api/search` 的 POST 请求逻辑。核心流程如下：
+
+1. **构建数据流**：使用 `createDataStream` 创建可写的流对象，并在其中调用 `streamText` 与模型交互【F:app/api/search/route.ts†L456-L474】。
+2. **模型配置**：根据用户选择的模型，设置温度、思考预算等参数【F:app/api/search/route.ts†L458-L511】。
+3. **注入工具**：通过 `tool()` 定义一系列可调用的工具，例如 `web_search`（使用 Tavily）、`movie_or_tv_search`、`currency_converter` 等【F:app/api/search/route.ts†L512-L528】【F:app/api/search/route.ts†L1026-L1159】。
+4. **执行与流式返回**：`streamText` 会依次调用工具、生成回复，并通过数据流实时推送给前端。调用完成后将结果存入数据库并支持断点续传【F:app/api/search/route.ts†L2360-L2519】。
+
+这种模式下，模型在收到用户提问后会自动决定是否调用工具（`toolChoice: 'auto'`），返回的结果通常包含引用的网页内容或其他 API 数据，实现“普通搜索”体验。
+
+## Extreme Search（深度搜索）实现
+
+`ai/extreme-search.ts` 定义了一个名为 `extremeSearchTool` 的工具，在 `route.ts` 中通过 `extreme_search` 暴露【F:app/api/search/route.ts†L2083-L2083】。其内部流程如下：
+
+1. **规划阶段**：调用 LLM 生成研究计划，包含多个标题与待办事项（todos），并向前端写入“Planning research”等状态信息【F:ai/extreme-search.ts†L132-L177】。
+2. **执行阶段**：根据计划条目，利用 `generateText` 驱动一个自主代理。该代理在每个 todo 中调用 `webSearch` 等工具进行查找，并将搜索查询和结果通过 `dataStream.writeMessageAnnotation` 反馈给前端【F:ai/extreme-search.ts†L192-L339】。
+3. **内容获取**：对搜索到的链接，再次使用 Exa 的 `getContents` 拉取全文内容，并通过注解发送摘要信息【F:ai/extreme-search.ts†L315-L340】。
+4. **结果整理**：执行结束后汇总所有来源、工具结果与图表数据（如使用 Daytona 运行代码所得），最终返回 `research` 对象【F:ai/extreme-search.ts†L374-L405】。
+
+Extreme Search 通过“规划→执行→汇总”的方式，对一个主题进行多轮、深度的信息挖掘，适合复杂研究场景。
+
+## Agent 与 Tools 组合方式
+
+- 普通搜索：在 `streamText` 调用中列出多个工具，模型根据对话上下文自动选择合适的工具。核心思路是“模型驱动→按需调用工具→整合回复”。
+- Extreme Search：先让模型生成结构化计划，再由自主代理逐个执行计划中的搜索任务。代理始终通过 `webSearch`（整合 Exa 搜索和内容抓取）和可选的代码执行工具完成任务，并将中间状态写入数据流。
+
+两者都利用 `DataStreamWriter` 实时将查询状态或结果返回给前端，但 Extreme Search 更偏向长链条自动化，执行步骤和搜索深度远高于普通搜索。
+
+## 作用与适用场景
+
+- **普通搜索**：快速获取网页、天气、地图等常规信息，适用于一般问答或简短搜索需求。
+- **Extreme Search**：对某一主题或问题进行系统性、深度的研究，能自动规划多轮查询并抓取大量来源，适合情报收集或技术调研等场景。
+
+## 复现要点
+
+1. 搭建 Next.js 环境并引入 Vercel AI SDK。
+2. 在 API Route 中使用 `createDataStream` 与 `streamText` 连接大模型。
+3. 使用 `tool()` 定义各种外部 API 的调用逻辑，如 Tavily 搜索、Exa 内容抓取、Daytona 代码执行等。
+4. 若需深度搜索，编写类似 `extremeSearch` 的函数：先规划，再逐步执行搜索，并持续写入进度到数据流。
+5. 前端接收流式数据并展示搜索进度、来源列表和最终回答。
+
