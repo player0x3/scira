@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { ChatInterface } from '@/components/chat-interface';
 import { getUser } from '@/lib/auth-utils';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
-import { Message } from '@/lib/db/schema';
+import { AiMessage } from '@/lib/db/schema';
 import { Metadata } from 'next';
 
 interface UIMessage {
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   } as Metadata;
 }
 
-function convertToUIMessages(messages: Array<Message>): Array<UIMessage> {
+function convertToUIMessages(messages: Array<AiMessage>): Array<UIMessage> {
   return messages.map((message) => {
     // Ensure parts are properly structured
     let processedParts = message.parts;

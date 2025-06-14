@@ -3,9 +3,9 @@ export type {
   Session,
   Account,
   Verification,
-  Chat,
-  Message,
-  Stream,
+  AiChat,
+  AiMessage,
+  AiStream,
   Visibility,
 } from '@prisma/client'
 

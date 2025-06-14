@@ -30,7 +30,7 @@ import {
 } from 'resumable-stream';
 import { after } from 'next/server';
 import { differenceInSeconds } from 'date-fns';
-import { Chat } from '@/lib/db/schema';
+import { AiChat } from '@/lib/db/schema';
 import { auth } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { geolocation } from "@vercel/functions";
@@ -2388,7 +2388,7 @@ export async function GET(request: Request) {
         return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
-    let chat: Chat | null;
+    let chat: AiChat | null;
 
     try {
         chat = await getChatById({ id: chatId });

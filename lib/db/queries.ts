@@ -2,8 +2,8 @@ import 'server-only'
 import { Prisma } from '@prisma/client'
 import { db } from './index'
 import {
-  type Chat,
-  type Message,
+  // type AiChat,
+  type AiMessage,
   type User,
 } from './schema'
 import { ChatSDKError } from '../errors'
@@ -28,7 +28,7 @@ export async function saveChat({
   visibility: 'public' | 'private'
 }) {
   try {
-    return await db.chat.create({
+    return await db.aiChat.create({
       data: {
         id,
         userId,
@@ -43,9 +43,9 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.message.deleteMany({ where: { chatId: id } })
-    await db.stream.deleteMany({ where: { chatId: id } })
-    return await db.chat.delete({ where: { id } })
+    await db.aiMessage.deleteMany({ where: { chatId: id } })
+    await db.aiStream.deleteMany({ where: { chatId: id } })
+    return await db.aiChat.delete({ where: { id } })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to delete chat by id')
   }
@@ -64,21 +64,21 @@ export async function getChatsByUserId({
 }) {
   try {
     const extendedLimit = limit + 1
-    const baseWhere: Prisma.ChatWhereInput = { userId: id }
+    const baseWhere: Prisma.AiChatWhereInput = { userId: id }
 
-    let where: Prisma.ChatWhereInput = baseWhere
+    let where: Prisma.AiChatWhereInput = baseWhere
 
     if (startingAfter) {
-      const selected = await db.chat.findUnique({ where: { id: startingAfter } })
+      const selected = await db.aiChat.findUnique({ where: { id: startingAfter } })
       if (!selected) throw new ChatSDKError('not_found:database', `Chat with id ${startingAfter} not found`)
       where = { AND: [baseWhere, { createdAt: { gt: selected.createdAt } }] }
     } else if (endingBefore) {
-      const selected = await db.chat.findUnique({ where: { id: endingBefore } })
+      const selected = await db.aiChat.findUnique({ where: { id: endingBefore } })
       if (!selected) throw new ChatSDKError('not_found:database', `Chat with id ${endingBefore} not found`)
       where = { AND: [baseWhere, { createdAt: { lt: selected.createdAt } }] }
     }
 
-    const chats = await db.chat.findMany({
+    const chats = await db.aiChat.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: extendedLimit,
@@ -96,7 +96,7 @@ export async function getChatsByUserId({
 
 export async function getChatById({ id }: { id: string }) {
   try {
-    return await db.chat.findUnique({ where: { id } })
+    return await db.aiChat.findUnique({ where: { id } })
   } catch (error) {
     return null
   }
@@ -104,7 +104,7 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function getChatWithUserById({ id }: { id: string }) {
   try {
-    const result = await db.chat.findUnique({
+    const result = await db.aiChat.findUnique({
       where: { id },
       include: { user: true },
     })
@@ -118,7 +118,7 @@ export async function getChatWithUserById({ id }: { id: string }) {
   }
 }
 
-export async function saveMessages({ messages }: { messages: Message[] }) {
+export async function saveMessages({ messages }: { messages: AiMessage[] }) {
   try {
     // Transform messages to match Prisma's expected input type
     const messagesToSave = messages.map(message => ({
@@ -130,7 +130,7 @@ export async function saveMessages({ messages }: { messages: Message[] }) {
       createdAt: message.createdAt,
     }))
     
-    return await db.message.createMany({ data: messagesToSave })
+    return await db.aiMessage.createMany({ data: messagesToSave })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save messages')
   }
@@ -146,7 +146,7 @@ export async function getMessagesByChatId({
   offset?: number
 }) {
   try {
-    return await db.message.findMany({
+    return await db.aiMessage.findMany({
       where: { chatId: id },
       orderBy: { createdAt: 'asc' },
       take: limit,
@@ -159,7 +159,7 @@ export async function getMessagesByChatId({
 
 export async function getMessageById({ id }: { id: string }) {
   try {
-    const message = await db.message.findUnique({ where: { id } })
+    const message = await db.aiMessage.findUnique({ where: { id } })
     return message ? [message] : []
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get message by id')
@@ -174,7 +174,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp: Date
 }) {
   try {
-    await db.message.deleteMany({
+    await db.aiMessage.deleteMany({
       where: { 
         chatId, 
         createdAt: { gte: timestamp } 
@@ -204,7 +204,7 @@ export async function updateChatVisiblityById({
   visibility: 'private' | 'public'
 }) {
   try {
-    return await db.chat.update({ 
+    return await db.aiChat.update({ 
       where: { id: chatId }, 
       data: { visibility } 
     })
@@ -221,7 +221,7 @@ export async function updateChatTitleById({
   title: string
 }) {
   try {
-    return await db.chat.update({
+    return await db.aiChat.update({
       where: { id: chatId },
       data: { title, updatedAt: new Date() },
     })
@@ -233,9 +233,9 @@ export async function updateChatTitleById({
 export async function getMessageCountByUserId({ id, differenceInHours }: { id: string; differenceInHours: number }) {
   try {
     const date = new Date(Date.now() - differenceInHours * 60 * 60 * 1000)
-    const count = await db.message.count({
+    const count = await db.aiMessage.count({
       where: {
-        chat: { userId: id },
+        aiChat: { userId: id },
         createdAt: { gte: date },
         role: 'user',
       },
@@ -248,7 +248,7 @@ export async function getMessageCountByUserId({ id, differenceInHours }: { id: s
 
 export async function createStreamId({ streamId, chatId }: { streamId: string; chatId: string }) {
   try {
-    await db.stream.create({ 
+    await db.aiStream.create({ 
       data: { 
         id: streamId, 
         chatId
@@ -261,7 +261,7 @@ export async function createStreamId({ streamId, chatId }: { streamId: string; c
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   try {
-    const streams = await db.stream.findMany({
+      const streams = await db.aiStream.findMany({
       where: { chatId },
       orderBy: { createdAt: 'asc' },
       select: { id: true },
