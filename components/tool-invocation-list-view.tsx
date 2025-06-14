@@ -73,7 +73,7 @@ import AcademicPapersCard from '@/components/academic-papers';
 import WeatherChart from '@/components/weather-chart';
 import InteractiveStockChart from '@/components/interactive-stock-chart';
 import { CurrencyConverter } from '@/components/currency_conv';
-import { ExtremeSearch } from '@/components/extreme-search';
+import { ExtremeSearch } from '@/components/aichat/extreme-search';
 import MemoryManager from '@/components/memory-manager';
 import MCPServerList from '@/components/mcp-server-list';
 import RedditSearch from '@/components/reddit-search';

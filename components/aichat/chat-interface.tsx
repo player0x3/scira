@@ -20,7 +20,7 @@ import FormComponent from '@/components/ui/form-component';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { cn, SearchGroupId, invalidateChatsCache } from '@/lib/utils';
 import { getCurrentUser, suggestQuestions, updateChatVisibility } from '@/app/actions';
-import Messages from '@/components/messages';
+import Messages from '@/components/aichat/messages';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '@/lib/db/schema';
 import { ChatHistoryDialog } from '@/components/chat-history-dialog';
@@ -190,8 +190,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     { role: "user", content: lastSubmittedQueryRef.current },
                     { role: "assistant", content: message.content },
                 ];
-                const { questions } = await suggestQuestions(newHistory);
-                setSuggestedQuestions(questions);
+                // const { questions } = await suggestQuestions(newHistory);
+                // setSuggestedQuestions(questions);
             }
         },
         onError: (error) => {
@@ -264,12 +264,12 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         { role: "user", content: lastUserMessage.content },
                         { role: "assistant", content: lastAssistantMessage.content },
                     ];
-                    try {
-                        const { questions } = await suggestQuestions(newHistory);
-                        setSuggestedQuestions(questions);
-                    } catch (error) {
-                        console.error("Error generating suggested questions:", error);
-                    }
+                    // try {
+                    //     const { questions } = await suggestQuestions(newHistory);
+                    //     setSuggestedQuestions(questions);
+                    // } catch (error) {
+                    //     console.error("Error generating suggested questions:", error);
+                    // }
                 }
             }
         };
