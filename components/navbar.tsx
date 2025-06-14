@@ -105,7 +105,7 @@ const Navbar = memo(({
                     : "bg-background")
         )}>
             <div className={cn("flex items-center gap-4", isDialogOpen ? "pointer-events-auto" : "")}>
-                <Link href="/new">
+                <Link href="/aichat/new">
                     <Button
                         type="button"
                         variant={'secondary'}
