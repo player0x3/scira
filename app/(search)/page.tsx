@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from 'react';
-import { ChatInterface } from '@/components/chat-interface';
+import { ChatInterface } from '@/components/aichat/chat-interface';
 import { InstallPrompt } from '@/components/InstallPrompt';
 
 const Home = () => {

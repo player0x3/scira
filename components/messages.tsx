@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Message } from '@/components/message';
 import { UIMessage } from '@ai-sdk/ui-utils';
 import { ReasoningPartView, ReasoningPart } from '@/components/reasoning-part';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertCircle, Copy } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown';
@@ -45,22 +45,22 @@ interface MessagesProps {
 }
 
 // Create a consistent logo header component to reuse
-const SciraLogoHeader = () => (
-  <div className="flex items-center gap-2 mb-2">
-    <Image 
-      src="/scira.png" 
-      alt="Scira" 
-      className='size-6 invert dark:invert-0' 
-      width={100} 
-      height={100} 
-      unoptimized 
-      quality={100} 
-    />
-    <h2 className="text-lg font-semibold font-syne text-neutral-800 dark:text-neutral-200">
-      Scira AI
-    </h2>
-  </div>
-);
+// const SciraLogoHeader = () => (
+//   <div className="flex items-center gap-2 mb-2">
+//     <Image 
+//       src="/scira.png" 
+//       alt="Scira" 
+//       className='size-6 invert dark:invert-0' 
+//       width={100} 
+//       height={100} 
+//       unoptimized 
+//       quality={100} 
+//     />
+//     <h2 className="text-lg font-semibold font-syne text-neutral-800 dark:text-neutral-200">
+//       Scira AI
+//     </h2>
+//   </div>
+// );
 
 const Messages: React.FC<MessagesProps> = ({
   messages,
@@ -175,7 +175,7 @@ const Messages: React.FC<MessagesProps> = ({
         
         return (
           <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(100vh-18rem)]">
-            <SciraLogoHeader />
+            {/* <SciraLogoHeader /> */}
             <div className="flex space-x-2 ml-8 mt-2">
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>

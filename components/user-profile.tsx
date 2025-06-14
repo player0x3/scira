@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, memo } from "react";
+import React, { useState, memo, useEffect } from "react";
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -53,14 +53,19 @@ const UserProfile = memo(({ className, user }: { className?: string; user?: User
   const [signingIn, setSigningIn] = useState(false);
   const [memoryDialogOpen, setMemoryDialogOpen] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
+  const [isClientLoaded, setIsClientLoaded] = useState(false);
   const { data: session, isPending } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    setIsClientLoaded(true);
+  }, []);
 
   // Use passed user prop if available, otherwise fall back to session
   const currentUser = user || session?.user;
   const isAuthenticated = !!(user || session);
 
-  if (isPending && !user) {
+  if (!isClientLoaded || (isPending && !user)) {
     return (
       <div className="size-10 aspect-square flex items-center justify-center p-3 pl-0">
         <div className="size-4 rounded-full bg-muted/50 animate-pulse"></div>
