@@ -14,8 +14,8 @@ export {
   SessionSchema,
   AccountSchema,
   VerificationSchema,
-  ChatSchema,
-  MessageSchema,
-  StreamSchema,
+  AiChatSchema,
+  AiMessageSchema,
+  AiStreamSchema,
   VisibilitySchema,
 } from '@/lib/zod'

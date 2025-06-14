@@ -16,67 +16,206 @@ generator zod {
 }
 
 model User {
-  id             String   @id @db.Text
-  name           String
-  email          String   @unique
-  emailVerified  Boolean
-  image          String?
-  createdAt      DateTime @db.Timestamp(6)
-  updatedAt      DateTime @db.Timestamp(6)
+  id                  String               @id
+  name                String
+  email               String
+  emailVerified       Boolean
+  image               String?
+  createdAt           DateTime
+  updatedAt           DateTime
+  username            String?
+  role                String?
+  banned              Boolean?
+  banReason           String?
+  banExpires          DateTime?
+  onboardingComplete  Boolean              @default(false)
+  paymentsCustomerId  String?
+  locale              String?
+  sessions            Session[]
+  accounts            Account[]
+  passkeys            Passkey[]
+  invitations         Invitation[]
+  purchases           Purchase[]
+  //   memberships        Member[]
+  aiChats             AiChat[]
+  aiTokenUsages       AiTokenUsage[]
+  preference          UserPreference?
+  integrations        UserIntegration[]
+  emailSendingRecords EmailSendingRecord[]
+  savedArticles       SavedArticle[]
+  aiProviders         AiProvider[]
+  tags                Tag[]
 
-  sessions   Session[]
-  accounts   Account[]
-  chats      Chat[]
+  @@unique([email])
+  @@unique([username])
+  @@map("user")
 }
 
 model Session {
-  id         String   @id @db.Text
-  expiresAt  DateTime @db.Timestamp(6)
-  token      String   @unique
-  createdAt  DateTime @db.Timestamp(6)
-  updatedAt  DateTime @db.Timestamp(6)
-  ipAddress  String?
-  userAgent  String?
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  activeOrganizationId String?
+
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+
+  @@unique([token])
+  @@map("session")
 }
 
 model Account {
-  id                    String   @id @db.Text
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime? @db.Timestamp(6)
-  refreshTokenExpiresAt DateTime? @db.Timestamp(6)
+  id           String    @id
+  accountId    String
+  providerId   String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+  password     String?
+
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
   scope                 String?
-  password              String?
-  createdAt             DateTime @db.Timestamp(6)
-  updatedAt             DateTime @db.Timestamp(6)
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
 }
 
 model Verification {
-  id        String   @id @db.Text
+  id         String   @id
   identifier String
-  value     String
-  expiresAt DateTime @db.Timestamp(6)
-  createdAt DateTime? @db.Timestamp(6)
-  updatedAt DateTime? @db.Timestamp(6)
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  @@map("verification")
 }
 
-model Chat {
-  id         String   @id @default(uuid()) @db.Text
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+
+  @@map("passkey")
+}
+
+// model Organization {
+//   id                 String       @id
+//   name               String
+//   slug               String?
+//   logo               String?
+//   createdAt          DateTime
+//   metadata           String?
+//   paymentsCustomerId String?
+//   members            Member[]
+//   invitations        Invitation[]
+//   purchases          Purchase[]
+//   aiChats            AiChat[]
+
+//   @@unique([slug])
+//   @@map("organization")
+// }
+
+// model Member {
+//   id             String       @id
+// //   organizationId String
+// //   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+//   userId         String
+//   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   role           String
+//   createdAt      DateTime
+
+//   @@unique([userId])
+//   @@map("member")
+// }
+
+model Invitation {
+  id        String   @id
+  //   organizationId String
+  //   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email     String
+  role      String?
+  status    String
+  expiresAt DateTime
+  inviterId String
+  user      User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}
+
+enum PurchaseType {
+  SUBSCRIPTION
+  ONE_TIME
+}
+
+model Purchase {
+  id             String       @id @default(cuid())
+  //   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  //   organizationId String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  type           PurchaseType
+  customerId     String
+  subscriptionId String?      @unique
+  productId      String
+  status         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([subscriptionId])
+}
+
+// ----------------------------Start Aichat--------------------------------
+// model AiChat {
+//   id        String   @id @default(cuid())
+//   //   organizationId String?
+//   //   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+//   userId    String?
+//   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   title     String?
+//   messages  Json[]
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   //   @@index([organizationId])
+//   @@index([userId])
+//   @@index([createdAt])
+//   @@map("ai_chat")
+// }
+
+model AiChat {
+  id         String      @id @default(uuid())
   userId     String
-  title      String   @default("New Chat")
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
-  updatedAt  DateTime @default(now()) @db.Timestamp(6)
-  visibility Visibility @default(private)
-  user       User     @relation(fields: [userId], references: [id])
-  messages   Message[]
-  streams    Stream[]
+  title      String      @default("New Chat")
+  createdAt  DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime    @default(now()) @db.Timestamp(6)
+  visibility Visibility  @default(private)
+  user       User        @relation(fields: [userId], references: [id])
+  messages   AiMessage[]
+  streams    AiStream[]
+
+  @@map("ai_chat")
 }
 
 enum Visibility {
@@ -84,19 +223,215 @@ enum Visibility {
   private
 }
 
-model Message {
-  id          String   @id @default(uuid()) @db.Text
+model AiMessage {
+  id          String   @id @default(uuid())
   chatId      String
   role        String
   parts       Json
   attachments Json
   createdAt   DateTime @default(now()) @db.Timestamp(6)
-  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  aiChat      AiChat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("ai_message")
 }
 
-model Stream {
-  id        String   @id @default(uuid()) @db.Text
+model AiStream {
+  id        String   @id @default(uuid())
   chatId    String
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  aiChat    AiChat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("ai_stream")
+}
+
+// ----------------------------End Aichat --------------------------------
+
+enum ThemeType {
+  LIGHT
+  DARK
+  BLUE
+  SAGE_GRAY
+  CREAM_GRAY
+  ROSE_GRAY
+  NAVY_CYAN
+}
+
+model UserPreference {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme     ThemeType @default(LIGHT)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("user_preference")
+}
+
+enum IntegrationType {
+  NOTION
+  READWISE
+  OBSIDIAN
+  KINDLE
+}
+
+model UserIntegration {
+  id        String          @id @default(cuid())
+  userId    String
+  type      IntegrationType
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  // 基础认证信息
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+
+  // 集成特定配置
+  config Json?
+
+  // 状态
+  isActive Boolean @default(true)
+
+  // 关联
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@index([type])
+  @@index([isActive])
+  @@map("user_integration")
+}
+
+enum EmailSendingStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum EmailType {
+  ARTICLE
+  NEWSLETTER
+  SYSTEM
+}
+
+model EmailSendingRecord {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  title     String
+  type      EmailType          @default(ARTICLE)
+  status    EmailSendingStatus @default(PENDING)
+  markdown  String             @db.Text
+  error     String?
+  sentAt    DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([email, status])
+  @@index([type, status])
+  @@map("email_sending_record")
+}
+
+model AiTokenUsage {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelName        String // 新增：模型名称
+  modelProvider    String // 新增：模型提供商
+  isUserKey        Boolean  @default(false) // 新增：是否为用户自定义APIkey，false=服务提供，true=用户APIkey
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  remark           String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isUserKey])
+  @@map("ai_token_usage")
+}
+
+// 新增：AI 提供商配置表
+model AiProvider {
+  id                 String   @id @default(cuid())
+  name               String // 例如 "OpenAI GPT-4", "Claude Opus via OpenRouter"
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerIdentifier String // 技术标识符，例如 "openai", "anthropic", "openrouter/anthropic/claude-3-opus"
+  apiKey             String // API 密钥
+  baseUrl            String? // 可选的基础 URL，用于 OpenRouter 或自托管服务
+  models             Json? // 可选：此提供商支持的具体模型列表，例如 ["gpt-4", "gpt-3.5-turbo"]
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([userId, providerIdentifier])
+  @@index([providerIdentifier])
+  @@index([userId])
+  @@map("ai_provider")
+}
+
+// 新增：用户收藏文章表
+model SavedArticle {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  originalUrl   String       @unique
+  content       String?      @db.Text
+  aiTranslation String?      @db.Text
+  mindMap       Json?
+  isAiContent   Boolean      @default(false)
+  isRagEnabled  Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  language      String?      @default("zh-CN") // 文章语言
+  articleTags   ArticleTag[]
+
+  @@index([userId])
+  @@index([originalUrl])
+  @@map("saved_article")
+}
+
+// 新增：标签表 (混合设计)
+model Tag {
+  id        String   @id @default(cuid())
+  userId    String? // null = 全局推荐标签，非null = 用户私有标签
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String?  @default("#6366f1") // 标签颜色
+  isSystem  Boolean  @default(false) // 是否为系统预设标签
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articleTags ArticleTag[]
+
+  @@unique([userId, name]) // 同一用户内标签名唯一，全局标签名也唯一
+  @@index([name])
+  @@index([userId])
+  @@index([isSystem])
+  @@map("tag")
+}
+
+enum TagAssignmentType {
+  MANUAL // 手动设置
+  AI // AI自动归类
+}
+
+// 新增：文章与标签的关联表 (多对多)
+model ArticleTag {
+  id             String            @id @default(cuid())
+  articleId      String
+  article        SavedArticle      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tagId          String
+  tag            Tag               @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedAt     DateTime          @default(now())
+  assignmentType TagAssignmentType @default(MANUAL) // 新增：归类方式
+
+  @@unique([articleId, tagId])
+  @@index([articleId])
+  @@index([tagId])
+  @@map("article_tag")
 }

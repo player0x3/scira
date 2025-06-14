@@ -1,0 +1,18 @@
+# 允许指定包运行构建脚本
+enable-pre-post-scripts=true
+
+# 允许以下包运行构建脚本（安全的包）
+trusted-dependencies[]=@prisma/client
+trusted-dependencies[]=@prisma/engines  
+trusted-dependencies[]=prisma
+trusted-dependencies[]=sharp
+trusted-dependencies[]=esbuild
+trusted-dependencies[]=@tailwindcss/oxide
+trusted-dependencies[]=@vercel/speed-insights
+trusted-dependencies[]=core-js
+trusted-dependencies[]=sqlite3
+
+# 其他推荐配置
+auto-install-peers=true
+dedupe-peer-dependents=false
+strict-peer-dependencies=false 
