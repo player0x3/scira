@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -349,6 +349,7 @@ const ImageGrid = ({ images, showAll = false }: ImageGridProps) => {
 
             {!isMobile ? (
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                    <DialogTitle></DialogTitle>
                     <DialogContent className="max-w-4xl! w-[90vw]! h-[65vh]! p-0 overflow-hidden border-none shadow-xl [&>button]:hidden">
                         <div className="relative w-full h-full rounded-lg overflow-hidden bg-white dark:bg-neutral-900">
                             <div className="absolute top-0 left-0 right-0 z-50 p-2 flex justify-between items-center">
