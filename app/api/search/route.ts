@@ -451,6 +451,7 @@ export async function POST(req: Request) {
     console.log("--------------------------------");
     console.log("Running with model: ", model.trim());
     console.log("Group: ", group);
+    console.log("activeTools",activeTools);
     console.log("Timezone: ", timezone);
 
     const stream = createDataStream({

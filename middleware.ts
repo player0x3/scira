@@ -7,10 +7,10 @@ export async function middleware(request: NextRequest) {
     const session = await auth.api.getSession({
         headers: request.headers
     })
-    console.log("Session: ", session);
+    // console.log("Session: ", session);
     
     const { pathname } = request.nextUrl;
-    console.log("Pathname: ", pathname);
+    // console.log("Pathname: ", pathname);
 
     // If user is authenticated but trying to access auth routes
     if (session && authRoutes.some(route => pathname.startsWith(route))) {

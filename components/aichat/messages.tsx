@@ -277,7 +277,7 @@ const Messages: React.FC<MessagesProps> = ({
                         }
 
                         // Then copy the share link
-                        const shareUrl = `https://scira.ai/search/${chatId}`;
+                        const shareUrl = `https://getgot.one/aichat/search/${chatId}`;
                         await navigator.clipboard.writeText(shareUrl);
                         
                         return selectedVisibilityType === 'private' 

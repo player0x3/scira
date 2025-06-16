@@ -270,7 +270,7 @@ function advancedSearch(chat: Chat, query: string, mode: SearchMode): boolean {
 export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialogProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const rawChatId = pathname?.startsWith('/search/') ? pathname.split('/')[2] : null;
+  const rawChatId = pathname?.startsWith('/aichat/search/') ? pathname.split('/')[2] : null;
   const currentChatId = rawChatId && isValidChatId(rawChatId) ? rawChatId : null;
 
   const queryClient = useQueryClient();
@@ -522,7 +522,7 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
   useEffect(() => {
     if (open) {
       allChats.forEach((chat) => {
-        router.prefetch(`/search/${chat.id}`);
+        router.prefetch(`/aichat/search/${chat.id}`);
         console.log(`Prefetching chat ${chat.id}`);
       });
     }
@@ -535,7 +535,7 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
     toast.info(`Opening "${displayTitle}"...`);
     invalidateChatsCache();
     onOpenChange(false);
-    router.push(`/search/${id}`);
+    router.push(`/aichat/search/${id}`);
   }, [onOpenChange]);
 
   // Handle chat deletion with inline confirmation

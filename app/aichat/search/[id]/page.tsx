@@ -129,7 +129,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     offset: 0
   });
 
-  console.log("Messages from DB: ", messagesFromDb);
+  // console.log("Messages from DB: ", messagesFromDb);
 
   const initialMessages = convertToUIMessages(messagesFromDb);
 

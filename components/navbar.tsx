@@ -51,7 +51,7 @@ const Navbar = memo(({
 
         if (!chatId) return;
 
-        const url = `https://scira.ai/search/${chatId}`;
+        const url = `https://getgot.one/aichat/search/${chatId}`;
         navigator.clipboard.writeText(url);
         setCopied(true);
         toast.success("Link copied to clipboard");
@@ -60,7 +60,7 @@ const Navbar = memo(({
     };
 
     // Generate the share URL
-    const shareUrl = chatId ? `https://scira.ai/search/${chatId}` : '';
+    const shareUrl = chatId ? `https://getgot.one/aichat/search/${chatId}` : '';
 
     // Social media share handlers
     const handleShareLinkedIn = (e: React.MouseEvent) => {
