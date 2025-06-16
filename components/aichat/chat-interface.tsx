@@ -44,7 +44,7 @@ interface ChatInterfaceProps {
     isOwner?: boolean;
 }
 
-const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility = 'private', isOwner = true }: ChatInterfaceProps): JSX.Element => {
+const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility = 'private', isOwner = true }: ChatInterfaceProps): React.JSX.Element => {
     const router = useRouter();
     const [query] = useQueryState('query', parseAsString.withDefault(''))
     const [q] = useQueryState('q', parseAsString.withDefault(''))

@@ -666,8 +666,8 @@ interface FormComponentProps {
         },
         chatRequestOptions?: ChatRequestOptions,
     ) => void;
-    fileInputRef: React.RefObject<HTMLInputElement>;
-    inputRef: React.RefObject<HTMLTextAreaElement>;
+    fileInputRef: React.RefObject<HTMLInputElement | null>;
+    inputRef: React.RefObject<HTMLTextAreaElement | null>;
     stop: () => void;
     messages: Array<UIMessage>;
     append: (

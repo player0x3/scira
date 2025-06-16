@@ -36,91 +36,112 @@ const SpinnerIcon = React.memo(() => (
 ));
 SpinnerIcon.displayName = 'SpinnerIcon';
 
+// Base renderer configuration - defines the structure without keys.
+const baseRenderer = {
+  code(code: string, language?: string) {
+    return (
+      <pre className="bg-neutral-200 dark:bg-neutral-800 p-2 rounded-md overflow-x-auto my-3">
+        <code className="text-neutral-800 dark:text-neutral-300 text-xs">{code}</code>
+      </pre>
+    );
+  },
+  codespan(code: string) {
+    return (
+      <code className="bg-neutral-200 dark:bg-neutral-800 px-1 py-0.5 rounded text-xs">{code}</code>
+    );
+  },
+  paragraph(text: ReactNode) {
+    return <p className="mb-3 last:mb-0">{text}</p>;
+  },
+  heading(text: ReactNode, level: number) {
+    const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
+    const classes = {
+      h1: "text-base font-bold mb-3 mt-4",
+      h2: "text-sm font-bold mb-2 mt-4",
+      h3: "text-sm font-semibold mb-2 mt-3",
+      h4: "text-xs font-semibold mb-1 mt-2",
+      h5: "text-xs font-medium mb-1 mt-2",
+      h6: "text-xs font-medium mb-1 mt-2",
+    };
+    
+    const className = classes[`h${level}` as keyof typeof classes] || "";
+    return <Tag className={className}>{text}</Tag>;
+  },
+  link(href: string, text: ReactNode) {
+    return (
+      <a 
+        href={href}
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {text}
+      </a>
+    );
+  },
+  list(body: ReactNode, ordered: boolean) {
+    const Type = ordered ? 'ol' : 'ul';
+    return <Type className={`${ordered ? "list-decimal" : "list-disc"} pl-5 mb-3 last:mb-1`}>{body}</Type>;
+  },
+  listItem(text: ReactNode) {
+    return <li className="mb-1">{text}</li>;
+  },
+  blockquote(text: ReactNode) {
+    return (
+      <blockquote className="border-l-2 border-neutral-300 dark:border-neutral-700 pl-3 py-1 my-3 italic">
+        {text}
+      </blockquote>
+    );
+  },
+  hr() {
+    return <hr className="my-4 border-t border-neutral-200 dark:border-neutral-800" />;
+  },
+  table(children: ReactNode[]) {
+    return (
+      <div className="overflow-x-auto mb-3">
+        <table className="min-w-full border-collapse text-xs">
+          {children}
+        </table>
+      </div>
+    );
+  },
+  tableRow(content: ReactNode) {
+    return <tr className="border-b border-neutral-200 dark:border-neutral-800">{content}</tr>;
+  },
+  tableCell(children: ReactNode[], flags: TableFlags) {
+    const align = flags.align ? `text-${flags.align}` : '';
+    return flags.header ? (
+      <th className={`px-2 py-1 font-semibold bg-neutral-100 dark:bg-neutral-800 ${align}`}>
+        {children}
+      </th>
+    ) : (
+      <td className={`px-2 py-1 ${align}`}>{children}</td>
+    );
+  }
+};
+
 // Custom renderer for Marked
 const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
-  // Define custom renderer with proper types
-  const renderer = {
-    code(code: string, language?: string) {
-      return (
-        <pre className="bg-neutral-200 dark:bg-neutral-800 p-2 rounded-md overflow-x-auto my-3">
-          <code className="text-neutral-800 dark:text-neutral-300 text-xs">{code}</code>
-        </pre>
-      );
-    },
-    codespan(code: string) {
-      return (
-        <code className="bg-neutral-200 dark:bg-neutral-800 px-1 py-0.5 rounded text-xs">{code}</code>
-      );
-    },
-    paragraph(text: ReactNode) {
-      return <p className="mb-3 last:mb-0">{text}</p>;
-    },
-    heading(text: ReactNode, level: number) {
-      const Tag = `h${level}` as keyof JSX.IntrinsicElements;
-      const classes = {
-        h1: "text-base font-bold mb-3 mt-4",
-        h2: "text-sm font-bold mb-2 mt-4",
-        h3: "text-sm font-semibold mb-2 mt-3",
-        h4: "text-xs font-semibold mb-1 mt-2",
-        h5: "text-xs font-medium mb-1 mt-2",
-        h6: "text-xs font-medium mb-1 mt-2",
+  const keyCounter = useRef(0);
+  // Reset on each render for stable keys
+  keyCounter.current = 0;
+  
+  const renderer = React.useMemo(() => {
+    const generateKey = () => `reasoning-md-key-${keyCounter.current++}`;
+
+    const keyedRenderer: { [key: string]: (...args: any[]) => ReactNode } = {};
+    for (const type in baseRenderer) {
+      const originalRenderer = baseRenderer[type as keyof typeof baseRenderer];
+      keyedRenderer[type] = (...args: any[]) => {
+        const element = (originalRenderer as Function).apply(null, args);
+        if (React.isValidElement(element)) {
+          return React.cloneElement(element, { key: generateKey() });
+        }
+        return element;
       };
-      
-      const className = classes[`h${level}` as keyof typeof classes] || "";
-      return <Tag className={className}>{text}</Tag>;
-    },
-    link(href: string, text: ReactNode) {
-      return (
-        <a 
-          href={href}
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          {text}
-        </a>
-      );
-    },
-    list(body: ReactNode, ordered: boolean) {
-      const Type = ordered ? 'ol' : 'ul';
-      return <Type className={`${ordered ? "list-decimal" : "list-disc"} pl-5 mb-3 last:mb-1`}>{body}</Type>;
-    },
-    listItem(text: ReactNode) {
-      return <li className="mb-1">{text}</li>;
-    },
-    blockquote(text: ReactNode) {
-      return (
-        <blockquote className="border-l-2 border-neutral-300 dark:border-neutral-700 pl-3 py-1 my-3 italic">
-          {text}
-        </blockquote>
-      );
-    },
-    hr() {
-      return <hr className="my-4 border-t border-neutral-200 dark:border-neutral-800" />;
-    },
-    table(children: ReactNode[]) {
-      return (
-        <div className="overflow-x-auto mb-3">
-          <table className="min-w-full border-collapse text-xs">
-            {children}
-          </table>
-        </div>
-      );
-    },
-    tableRow(content: ReactNode) {
-      return <tr className="border-b border-neutral-200 dark:border-neutral-800">{content}</tr>;
-    },
-    tableCell(children: ReactNode[], flags: TableFlags) {
-      const align = flags.align ? `text-${flags.align}` : '';
-      return flags.header ? (
-        <th className={`px-2 py-1 font-semibold bg-neutral-100 dark:bg-neutral-800 ${align}`}>
-          {children}
-        </th>
-      ) : (
-        <td className={`px-2 py-1 ${align}`}>{children}</td>
-      );
     }
-  };
+    return keyedRenderer;
+  }, []);
 
   return (
     <div className="markdown-content space-y-1">
@@ -282,7 +303,7 @@ export const ReasoningPartView: React.FC<ReasoningPartViewProps> = React.memo(({
                           </div>
                         </div>
                       ) : (
-                        '<redacted>'
+                        <div key={detailIndex}>{'<redacted>'}</div>
                       )
                     ))
                   ) : part.reasoning ? (

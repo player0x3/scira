@@ -14,7 +14,7 @@ function ThemeOption({
   isActive,
   onClick,
 }: {
-  icon: JSX.Element;
+  icon: React.JSX.Element;
   value: string;
   isActive?: boolean;
   onClick: (value: string) => void;

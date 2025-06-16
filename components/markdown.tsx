@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Latex from 'react-latex-next';
 import Marked, { ReactRenderer } from 'marked-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -153,9 +153,20 @@ const preprocessLaTeX = (content: string) => {
 };
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
-  // Preprocess content to find and normalize citation links before passing to marked
-  // Table row counter for zebra striping
-  const [tableRowCounter, setTableRowCounter] = useState(0);
+  // Use useRef instead of useState to avoid setState during render
+  const tableRowCounterRef = useRef(0);
+  const keyCounterRef = useRef(0);
+  
+  // Create a stable key generator based on content hash
+  const contentHash = useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(36);
+  }, [content]);
 
   const [processedContent, extractedCitations, latexBlocks] = useMemo(() => {
     const citations: CitationLink[] = [];
@@ -246,7 +257,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   const CodeBlock: React.FC<CodeBlockProps> = ({ language, children }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isWrapped, setIsWrapped] = useState(false);
-    const { resolvedTheme } = useTheme();
+    const { theme } = useTheme();
 
     const handleCopy = useCallback(async () => {
       await navigator.clipboard.writeText(children);
@@ -318,12 +329,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           </div>
           <SyntaxHighlighter
             language={language || 'text'}
-            style={resolvedTheme === 'dark' ? oneDark : oneLight}
+            style={theme === 'dark' ? oneDark : oneLight}
             customStyle={{
               margin: 0,
               padding: '0.75rem 0.25rem 0.75rem',
-              backgroundColor: resolvedTheme === 'dark' ? '#171717' : 'transparent',
-              color: resolvedTheme === 'dark' ? '#e5e5e5' : '#171717',
+              backgroundColor: theme === 'dark' ? '#171717' : 'transparent',
               borderRadius: 0,
               borderBottomLeftRadius: '0.375rem',
               borderBottomRightRadius: '0.375rem',
@@ -332,7 +342,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
             showLineNumbers={true}
             lineNumberStyle={{
               textAlign: 'right',
-              color: resolvedTheme === 'dark' ? '#6b7280' : '#808080',
+              color: theme === 'dark' ? '#6b7280' : '#808080',
               backgroundColor: 'transparent',
               fontStyle: 'normal',
               marginRight: '1em',
@@ -341,7 +351,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
               minWidth: '2em'
             }}
             lineNumberContainerStyle={{
-              backgroundColor: resolvedTheme === 'dark' ? '#171717' : '#f5f5f5',
+              backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
               float: 'left'
             }}
             wrapLongLines={isWrapped}
@@ -394,7 +404,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     const title = citationText || (typeof text === 'string' ? text : '');
 
     return (
-      <HoverCard openDelay={10}>
+      <HoverCard openDelay={10} key={generateKey()}>
         <HoverCardTrigger asChild>
           <Link
             href={href}
@@ -419,8 +429,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     );
   };
 
-  const generateKey = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const generateKey = (suffix?: string) => {
+    keyCounterRef.current += 1;
+    return `${contentHash}-${keyCounterRef.current}${suffix ? `-${suffix}` : ''}`;
   }
 
   const renderCitation = (index: number, citationText: string, href: string) => {
@@ -431,6 +442,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     );
   };
 
+  // Reset key counter for each render to ensure consistent keys
+  keyCounterRef.current = 0;
+  
   const renderer: Partial<ReactRenderer> = {
     text(text: string) {
       // Check if this text contains any LaTeX placeholders
@@ -484,7 +498,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         matches.forEach((match, index) => {
           // Add text before the LaTeX placeholder
           if (match.index! > lastIndex) {
-            parts.push(text.slice(lastIndex, match.index));
+            const textPart = text.slice(lastIndex, match.index);
+            if (textPart) {
+              parts.push(<span key={generateKey(`text-${index}`)}>{textPart}</span>);
+            }
           }
           
           // Add the LaTeX component
@@ -492,7 +509,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           if (latexBlock) {
             parts.push(
               <Latex
-                key={`latex-${index}-${generateKey()}`}
+                key={generateKey(`latex-${index}`)}
                 delimiters={[
                   { left: '$', right: '$', display: false },
                   { left: '\\(', right: '\\)', display: false }
@@ -503,7 +520,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
               </Latex>
             );
           } else {
-            parts.push(match[0]); // fallback to placeholder text
+            parts.push(<span key={generateKey(`fallback-${index}`)}>{match[0]}</span>); // fallback to placeholder text
           }
           
           lastIndex = match.index! + match[0].length;
@@ -511,7 +528,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         
         // Add any remaining text after the last LaTeX placeholder
         if (lastIndex < text.length) {
-          parts.push(text.slice(lastIndex));
+          const remainingText = text.slice(lastIndex);
+          if (remainingText) {
+            parts.push(<span key={generateKey('remaining')}>{remainingText}</span>);
+          }
         }
         
         return <>{parts}</>;
@@ -544,7 +564,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         }
       }
       
-      return <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
+      return <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300" key={generateKey()}>{children}</p>;
     },
     code(children, language) {
       return <CodeBlock language={language} key={generateKey()}>{String(children)}</CodeBlock>;
@@ -558,10 +578,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       }
       return isValidUrl(href)
         ? renderHoverCard(href, text)
-        : <a href={href} className="text-primary dark:text-primary-light hover:underline font-medium">{text}</a>;
+        : <a href={href} className="text-primary dark:text-primary-light hover:underline font-medium" key={generateKey()}>{text}</a>;
     },
     heading(children, level) {
-      const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
+      const HeadingTag = `h${level}` as keyof React.JSX.IntrinsicElements;
       const sizeClasses = {
         1: "text-2xl md:text-3xl font-extrabold mt-4 mb-4",
         2: "text-xl md:text-2xl font-bold mt-4 mb-3",
@@ -572,7 +592,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       }[level] || "";
 
       return (
-        <HeadingTag className={`${sizeClasses} text-neutral-900 dark:text-neutral-50 tracking-tight`}>
+        <HeadingTag className={`${sizeClasses} text-neutral-900 dark:text-neutral-50 tracking-tight`} key={generateKey()}>
           {children}
         </HeadingTag>
       );
@@ -580,26 +600,26 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     list(children, ordered) {
       const ListTag = ordered ? 'ol' : 'ul';
       return (
-        <ListTag className={`my-5 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${ordered ? 'list-decimal' : 'list-disc'}`}>
+        <ListTag className={`my-5 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${ordered ? 'list-decimal' : 'list-disc'}`} key={generateKey()}>
           {children}
         </ListTag>
       );
     },
     listItem(children) {
-      return <li className="pl-1 leading-relaxed">{children}</li>;
+      return <li className="pl-1 leading-relaxed" key={generateKey()}>{children}</li>;
     },
     blockquote(children) {
       return (
-        <blockquote className="my-6 border-l-4 border-primary/30 dark:border-primary/20 pl-4 py-1 text-neutral-700 dark:text-neutral-300 italic bg-neutral-50 dark:bg-neutral-900/50 rounded-r-md">
+        <blockquote className="my-6 border-l-4 border-primary/30 dark:border-primary/20 pl-4 py-1 text-neutral-700 dark:text-neutral-300 italic bg-neutral-50 dark:bg-neutral-900/50 rounded-r-md" key={generateKey()}>
           {children}
         </blockquote>
       );
     },
     table(children) {
       // Reset row counter for each table
-      setTableRowCounter(0);
+      tableRowCounterRef.current = 0;
       return (
-        <div className="w-full my-6">
+        <div className="w-full my-6" key={generateKey()}>
           <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse m-0!">
@@ -611,8 +631,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       );
     },
     tableRow(children) {
-      const currentRow = tableRowCounter;
-      setTableRowCounter(prev => prev + 1);
+      const currentRow = tableRowCounterRef.current;
+      tableRowCounterRef.current = currentRow + 1;
       
       // Skip zebra striping for header rows
       const isEvenRow = currentRow > 0 && currentRow % 2 === 0;
@@ -622,7 +642,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           "border-b border-neutral-200 dark:border-neutral-700 last:border-b-0",
           "hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors duration-200",
           isEvenRow && "bg-neutral-50/50 dark:bg-neutral-800/30"
-        )}>
+        )} key={generateKey()}>
           {children}
         </tr>
       );
@@ -640,7 +660,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           "border-b border-neutral-200 dark:border-neutral-700",
           "break-words",
           alignClass
-        )}>
+        )} key={generateKey()}>
           <div className="font-medium">
             {children}
           </div>
@@ -651,7 +671,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           "border-r border-neutral-100 dark:border-neutral-800 last:border-r-0",
           "break-words",
           alignClass
-        )}>
+        )} key={generateKey()}>
           <div className="leading-relaxed">
             {children}
           </div>
@@ -660,14 +680,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     },
     tableHeader(children) {
       return (
-        <thead>
+        <thead key={generateKey()}>
           {children}
         </thead>
       );
     },
     tableBody(children) {
       return (
-        <tbody>
+        <tbody key={generateKey()}>
           {children}
         </tbody>
       );
